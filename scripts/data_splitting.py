@@ -10,7 +10,7 @@ log.basicConfig(level=log.INFO, format='%(asctime)s - %(message)s', datefmt='%d-
 
 # Define class names and number of images per class
 class_names = ['cordana', 'healthy', 'pestalotiopsis', 'sigatoka']
-n_images_per_class = len(os.listdir(f"OriginalSet/{class_names[0]}"))
+n_images_per_class = len(os.listdir(f"AugmentedSet/{class_names[0]}"))
 
 log.info(n_images_per_class)
 
@@ -31,7 +31,7 @@ for name in class_names:
             os.makedirs(class_path)
 
 # Collect all image paths for each class
-all_class_paths = [glob(f"OriginalSet/{name}/*") for name in class_names]
+all_class_paths = [glob(f"AugmentedSet/{name}/*") for name in class_names]
 
 # Define training, validation, and testing size
 total_size = sum([len(paths) for paths in all_class_paths])

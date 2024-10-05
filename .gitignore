@@ -1,4 +1,6 @@
 OriginalSet/
+AugmentedSet/
 data/
 __pycache__/
 venv/
+banana_leaf_disease_custom_cnn.h5
