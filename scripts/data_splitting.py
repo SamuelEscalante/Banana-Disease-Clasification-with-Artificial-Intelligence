@@ -72,4 +72,5 @@ for images, data_type in [(train_images, "Training"), (valid_images, "Validation
 #     os.rmdir("OriginalSet/" + directory)
 
 # log.info confirmation message
+
 log.info("ALL DONE!!")
