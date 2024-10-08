@@ -27,7 +27,7 @@ for name in class_names:
             os.makedirs(class_path)
 
 # Recopilar todas las rutas de imágenes para cada clase
-all_class_paths = {name: glob(f"AugmentedSet/{name}/*") for name in class_names}
+all_class_paths = {name: glob(f"OriginalSet/{name}/*") for name in class_names}
 
 # Definir proporciones para entrenamiento, validación y prueba
 train_ratio = 0.70
