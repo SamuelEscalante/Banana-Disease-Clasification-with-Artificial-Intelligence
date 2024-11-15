@@ -8,13 +8,21 @@ import sys
 import logging as log
 from tensorflow.keras.applications.inception_v3 import preprocess_input
 from tkinter import ttk  # Importar ttk para usar Notebook
+from scipy.stats import entropy  # Importar la función entropy
+
+def resource_path(relative_path):
+    """Obtiene la ruta absoluta del recurso, compatible con PyInstaller."""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath('.'), relative_path)
 
 # Configurar el nivel de log
 log.basicConfig(level=log.INFO)
 
 log.info("Cargando modelo preentrenado ...")
 try:
-    model = tf.keras.models.load_model("models/modelo_inception.h5")
+    model_path = resource_path("models/modelo_inception.h5")
+    model = tf.keras.models.load_model(model_path)
     log.info("Modelo cargado exitosamente!")
 except Exception as e:
     log.error(f"Error al cargar el modelo: {e}")
@@ -26,6 +34,7 @@ def preprocess_image(img_path):
     img_array = preprocess_input(img_array)
     img_array = np.expand_dims(img_array, axis=0)
     return img_array
+
 
 # Función para realizar la clasificación y mostrar recomendaciones
 def classify_image():
@@ -45,15 +54,18 @@ def classify_image():
         class_idx = np.argmax(predictions)
         probability = round(predictions[0][class_idx] * 100, 2)  # Probabilidad en porcentaje
         
+        # Calcular la entropía de la predicción
+        pred_entropy = entropy(predictions[0])
+        
         # Mostrar el resultado, las recomendaciones y las probabilidades de todas las clases
         class_labels = ["Cordana", "Saludable", "Pestaloptiosis", "Sigatoka"]
         result = class_labels[class_idx]
-        result_label.config(text=f"Tu imagen se clasificó como: {result} , con una confianza de: {probability}%")
+        result_label.config(text=f"Tu imagen se clasificó como: {result} , con una confianza de: {probability}%\nEntropía de la predicción: {pred_entropy:.4f}")
         
         probabilities_text = "Probabilidades:\n"
         for i, label in enumerate(class_labels):
             probabilities_text += f"{label}: {round(predictions[0][i] * 100, 2)}%\n"
-            probabilities_label.config(text=probabilities_text)
+        probabilities_label.config(text=probabilities_text)
 
 # Función para regresar al menú principal
 def go_to_menu():
@@ -107,7 +119,12 @@ classes_label.pack()
 
 # Crear imágenes representativas para cada clase en la primera pestaña
 class_labels = ["Cordana", "Saludable", "Pestaloptiosis", "Sigatoka"]
-img_paths = ["static/img/cordana.jpeg", "static/img/healthy.jpeg", "static/img/pestalotiopsis.jpeg", "static/img/sigatoka.jpeg"]  # Coloca las rutas a las imágenes
+img_paths = [
+    resource_path("static/img/cordana.jpeg"), 
+    resource_path("static/img/healthy.jpeg"), 
+    resource_path("static/img/pestalotiopsis.jpeg"), 
+    resource_path("static/img/sigatoka.jpeg")
+    ]  # Coloca las rutas a las imágenes
 
 # Crear un marco horizontal para las imágenes y etiquetas
 images_frame = tk.Frame(menu_tab, bg="#2F4F4F")
@@ -230,7 +247,7 @@ probabilities_label = tk.Label(
 probabilities_label.pack(pady=10)
 
 # Botón de atrás para regresar al menú principal
-back_icon = ImageTk.PhotoImage(Image.open("static/img/barra-de-menus.png").resize((70, 70)))
+back_icon = ImageTk.PhotoImage(Image.open(resource_path("static/img/barra-de-menus.png")).resize((70, 70)))
 btn_back_classification = tk.Button(
     classification_tab,
     image=back_icon,
@@ -300,8 +317,8 @@ for idx, disease in enumerate(class_labels):
     disease_img_label = tk.Label(recommendations_images_frame, image=img_refs[disease], bg="#2F4F4F", borderwidth=2, relief="solid", padx=10, pady=10)
     disease_img_label.image = img_refs[disease]
     disease_img_label.grid(row=0, column=idx, padx=15, pady=10)
-    disease_img_label.bind("<Button-1>", lambda event, dis=disease: show_recommendation(dis))
-
+    disease_img_label.bind("<Button-1>", lambda e, label=disease: show_recommendation(label))  # Bind click event to show_recommendation
+    
     disease_label_text = tk.Label(recommendations_images_frame, text=disease, font=("Helvetica", 12, "bold"), fg="#F0E68C", bg="#2F4F4F")
     disease_label_text.grid(row=1, column=idx, padx=15, pady=5)
 
@@ -326,5 +343,5 @@ recommendation_img_label = tk.Label(recommendations_tab, bg="#2F4F4F", borderwid
 recommendation_img_label.pack(pady=10)
 
 # Ejecutar la aplicación
-root.update() 
+root.update()
 root.mainloop()
